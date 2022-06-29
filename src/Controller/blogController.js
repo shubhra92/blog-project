@@ -1,5 +1,4 @@
 const blogModel=require("../Model/blogModel")
-const authorModel=require("../Model/authorModel")
 const mongoose=require("mongoose")
 
 const createBlog=async function(req,res){
@@ -26,23 +25,25 @@ let obj={title:title,
     body:body}
 
 
-if(Object.keys(data).indexOf("tags")!==-1) {if(tags.trim())
-    { 
-        obj.tags=tags.trim()
-
-    }else return res.status(400).send({status:false,msg:"no value of tags"})
-
+if(tags){
+    if(Array.isArray(tags)){
+        obj['tags']=[...tags]
+    }
+    if(Object.prototype.toString.call(tags)==="[Object String]"){
+        obj.tags=[tags]
+    }
 }
 
-if(Object.keys(data).indexOf("subcategory")!==-1) {if(subcategory.trim())
-    { 
-    
-        obj.subcategory=subcategory.trim()
-      
-    }else return res.status(400).send({status:false,msg:"no value of subcategory"})
+if(subcategory){
+    if(Array.isArray(subcategory)){
+        obj['subcategory']=[...subcategory]
+    }
+    if(Object.prototype.toString.call(subcategory)==="[Object String]"){
+        obj.tags=[subcategory]
+    }
 }
  let blogCreate=await blogModel.create(obj)
-    return res.status(201).send({Status:false,data:blogCreate})
+    return res.status(201).send({Status:true,data:blogCreate})
 
     }catch(err){
         res.status(500).send({err:err.message})
@@ -57,9 +58,6 @@ const getBlogs=async function(req,res){
         const data=req.query
         let {subcategory,authorId,category,tags}=data
         let obj={}
-    console.log(typeof obj)
-    console.log(Object.keys(data)[0])
-    //inside if undefind means false
        if(Object.keys(data)[0]){
             if(subcategory){
                 //we are pushing obj within empty subcategory
@@ -121,25 +119,22 @@ if(title.trim().length===0 )
 
 return res.status(400).send({status:false,msg:"title val must be present" })
 
-// 1st  process
-
-// const updateBlog=await blogModel.findById(data.blogId)
-// updateBlog.title=title
-// updateBlog.subcategory.push(subcategory)
-// updateBlog.tags.push(tags)
-// updateBlog.body=body
-// updateBlog.isPublished=true
-// updateBlog.publishedAt=new Date()
-// const a=await updateBlog.save()
-// res.status(200).send({status:true,data:a})
-
-// 2nd alternative process
-
-
-// const updateBlog=await blogModel.findOneAndUpdate({_id:data.blogId},{$set:{title,subcategory,tags,body,isPublished:true,publishedAt:new Date()}},{new:true})
-// res.status(200).send({status:true,data:updateBlog})
-
-// 3rd alternative process
+if(tags){
+    if(Array.isArray(tags)){
+        tags=[...tags]
+    }
+    if(Object.prototype.toString.call(tags)==="[Object String]"){
+        tags=[tags]
+    }
+}
+if(subcategory){
+    if(Array.isArray(subcategory)){
+        subcategory=[...subcategory]
+    }
+    if(Object.prototype.toString.call(subcategory)==="[Object String]"){
+        subcategory=[subcategory]
+    }
+}
 
 
 const updateBlog=await blogModel.findByIdAndUpdate(data.blogId,{$set:{title,subcategory,tags,body,isPublished:true,publishedAt:new Date()}},{new:true})
@@ -162,21 +157,9 @@ if(!mongoose.isValidObjectId(data.blogId)){
  }
 
 
- // 1st method
+await blogModel.findOneAndUpdate({_id:data.blogId,isDeleted:false},{$set:{isDeleted:true,isPublished:false}})
 
-        // const deleteblog=await blogModel.updateOne({_id:data.blogId,isDeleted:false},{$set:{isDeleted:true,isPublished:false}})
-
-        //console.log(deleteblog)
-
-        // if(deleteblog.matchedCount!=1){
-        //     res.status(404).send({status:false,msg:"not found"})
-//}
-
-//2nd method
-
-const deleteblog=await blogModel.findOneAndUpdate({_id:data.blogId,isDeleted:false},{$set:{isDeleted:true,isPublished:false}},{new:true})
-
-        res.status(200).send({status:true,data:deleteblog})
+        res.status(200).send({status:true})
         
 
     }catch(err){
@@ -202,7 +185,7 @@ let obj={}
      }
      obj.authorId=authorId
 }
-//console.log(obj)
+
 if(tags){
     obj.tags=tags
     }
@@ -216,12 +199,12 @@ if(Object.keys(obj).length==0){
     return  res.status(400).send({status:false,msg:"plz give query within [authorId,subcategory,tags,isPublished]"})
 }
 
-        const deletebyQuery=await blogModel.updateMany({$and:[obj,{isDeleted:false}]},{$set:{isDeleted:true,deletedAt:new Date,isPublished:false}})
+let deletebyQuery=await blogModel.updateMany({$and:[obj,{isDeleted:false}]},{$set:{isDeleted:true,deletedAt:new Date,isPublished:false}})
          if(deletebyQuery.matchedCount==0) {
              return  res.status(404).send({status:true,msg:"there is no match"})}
         
 
-        res.status(200).send({status:true,data:deletebyQuery})
+        res.status(200).send({status:true})
 
 
     }catch(err){

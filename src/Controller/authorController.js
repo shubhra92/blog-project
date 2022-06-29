@@ -25,8 +25,6 @@ if(!fname.trim()|| !lname.trim() || !title.trim() || !email.trim() || !password.
 if(["Mr", "Mrs", "Miss"].indexOf(data.title)==-1)
 return res.status(400).send({status:false,msg:"Enter a valid title Mr or Mrs or Miss " })
 
-//title="M"+title.split("").shift(). join("")
-
 if(!validate(email)){
     return res.status(400).send({status:false,msg:"Enter a valid email " })
 }
@@ -68,14 +66,14 @@ return res.status(400).send({status:false,msg:"Enter a valid email " })
     email,password
    })
    if(!authorData){
-    res.status(400).send({status:false,msg:"no data found for this email & password"})
+    return res.status(400).send({status:false,msg:"no data found for this email & password"})
 }
 
-const TOKEN=jwt.sign({
+const token=jwt.sign({
     authorId:authorData._id
     },"this-is-a-srcret-key")
 
-    res.status(200).send({staus:true,TOKEN})
+    res.status(200).send({staus:true,token})
 
 
     }catch(err){

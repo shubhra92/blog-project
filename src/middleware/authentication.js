@@ -1,6 +1,5 @@
 const jwt=require("jsonwebtoken")
 const blogModel = require("../Model/blogModel")
-//const {StringUtilities}=require('data-validator-js')
 
 
 
@@ -29,10 +28,8 @@ const authorisation=async(req,res,next)=>{
         const token=req.headers["x-api-key"]
         const blogId=req.params.blogId
         const blogByblogId=await blogModel.findById(blogId)
-       // console.log(typeof blogByblogId.authorId)
-        const userdata=jwt.verify(token,"this-is-a-srcret-key")
-       // console.log(typeof userdata.authorId)
-        if(blogByblogId.authorId!=userdata.authorId){
+        const tokenData=jwt.verify(token,"this-is-a-srcret-key")
+        if(blogByblogId.authorId!=tokenData.authorId){
             res.status(403).send({status:false,msg:"authorisation failed"})
         
         }
